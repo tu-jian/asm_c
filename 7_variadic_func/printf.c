@@ -1,10 +1,7 @@
-#include <stdio.h>
-#include <stdarg.h>
-
 void printch(char ch)
 {
 //	console_print(ch);
-	putchar(ch);
+//	putchar(ch);
 }
 
 void printdec(int dec)
@@ -37,15 +34,15 @@ void printhex(int hex)
 	}
 }
 
+#define next_arg(vp, type)	(*(type*)(vp += sizeof(int)))
 void print(char* fmt, ...)
 {
-	int  vargint = 0;
-	char* vargpch = NULL;
-	char vargch = 0;
-	char* pfmt = NULL;
-	va_list vp;
+	int  varint;
+	char* varpch;
+	char* pfmt;
+	char* vp;
 
-	va_start(vp, fmt);
+	vp = (char*)(&fmt);
 	pfmt = fmt;
 
 	while(*pfmt) {
@@ -53,22 +50,20 @@ void print(char* fmt, ...)
 			switch(*(++pfmt)) {
 
 			case 'c':
-				vargch = va_arg(vp, int);
-				/*    va_arg(ap, type), if type is narrow type (char, short, float) an error is given in strict ANSI
-				mode, or a warning otherwise.In non-strict ANSI mode, 'type' is allowed to be any expression. */
-				printch(vargch);
+				varint = next_arg(vp, int);
+				printch(varint);
 				break;
 			case 'd':
-				vargint = va_arg(vp, int);
-				printdec(vargint);
+				varint = next_arg(vp, int);
+				printdec(varint);
 				break;
 			case 's':
-				vargpch = va_arg(vp, char*);
-				printstr(vargpch);
+				varpch = next_arg(vp, char*);
+				printstr(varpch);
 				break;
 			case 'x':
-				vargint = va_arg(vp, int);
-				printhex(vargint);
+				varint = next_arg(vp, int);
+				printhex(varint);
 				break;
 			case '%':
 				printch('%');
@@ -81,12 +76,11 @@ void print(char* fmt, ...)
 			printch(*pfmt++);
 		}
 	}
-	va_end(vp);
 }
 
 int main(void)
 {
-	print("print: %c\n", 'c');
+	print("print: %c:%d:%s\n", 'c', 123, "abcd");
 	print("print: %d\n", 1234567);
 	print("print: %s\n", "string test");
 	print("print: %x\n", 0xabcdef);
